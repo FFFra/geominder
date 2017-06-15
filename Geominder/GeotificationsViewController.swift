@@ -33,10 +33,16 @@ class GeotificationsViewController: UIViewController {
   @IBOutlet weak var mapView: MKMapView!
   
   var geotifications: [Geotification] = []
+  let locationManager = CLLocationManager()
   
   override func viewDidLoad() {
     super.viewDidLoad()
     loadAllGeotifications()
+    
+    locationManager.delegate = self
+    locationManager.requestAlwaysAuthorization()
+    loadAllGeotifications()
+    
   }
   
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -126,6 +132,9 @@ extension GeotificationsViewController: AddGeotificationsViewControllerDelegate 
 
 // MARK: - Location Manager Delegate
 extension GeotificationsViewController: CLLocationManagerDelegate {
+  func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    mapView.showsUserLocation = (status == .authorizedAlways)
+  }
   
 }
 
