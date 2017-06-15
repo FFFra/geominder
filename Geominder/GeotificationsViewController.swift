@@ -1,28 +1,11 @@
 /**
- * Copyright (c) 2016 Razeware LLC
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+
  */
 
 import UIKit
 import MapKit
 import CoreLocation
+
 
 struct PreferencesKeys {
   static let savedItems = "savedItems"
@@ -180,3 +163,33 @@ extension GeotificationsViewController: MKMapViewDelegate {
   }
   
 }
+
+//MARK: create user region
+
+  func region(withGeotification geotification: Geotification) -> CLCircularRegion {
+    //1
+    let region = CLCircularRegion(center: geotification.coordinate, radius: geotification.radius, identifier: geotification.identifier)
+    //2
+    region.notifyOnEntry = (geotification.eventType == .onEntry)
+    region.notifyOnExit = !region.notifyOnEntry
+    return region
+}
+
+//MARK: Start monitoring
+
+func startMonitoring(geotification: Geotification) {
+  // 1
+  if !CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+    showAlert(withTitle:"Error", message: "Geofencing is not supported on this device!")
+    return
+  }
+  // 2
+  if CLLocationManager.authorizationStatus() != .authorizedAlways {
+    showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geominder permission to access the device location.")
+  }
+  // 3
+  let region = self.region(withGeotification: geotification)
+  // 4
+  locationManager.startMonitoring(for: region)
+}
+
