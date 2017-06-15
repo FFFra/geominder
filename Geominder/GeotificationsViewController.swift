@@ -1,10 +1,9 @@
-/**
 
- */
 
 import UIKit
 import MapKit
 import CoreLocation
+
 
 
 struct PreferencesKeys {
@@ -34,6 +33,33 @@ class GeotificationsViewController: UIViewController {
       let vc = navigationController.viewControllers.first as! AddGeotificationViewController
       vc.delegate = self
     }
+  }
+  //MARK: create user region
+  
+  func region(withGeotification geotification: Geotification) -> CLCircularRegion {
+    //1
+    let region = CLCircularRegion(center: geotification.coordinate, radius: geotification.radius, identifier: geotification.identifier)
+    //2
+    region.notifyOnEntry = (geotification.eventType == .onEntry)
+    region.notifyOnExit = !region.notifyOnEntry
+    return region
+  }
+  
+ // MARK:start monitoring
+  func startMonitoring(geotification: Geotification) {
+    // 1
+    if !CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+      showAlert(withTitle:"Error", message: "Geofencing is not supported on this device!")
+      return
+    }
+    // 2
+    if CLLocationManager.authorizationStatus() != .authorizedAlways {
+      showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geotify permission to access the device location.")
+    }
+    // 3
+    let region = self.region(withGeotification: geotification)
+    // 4
+    locationManager.startMonitoring(for: region)
   }
   
   // MARK: Loading and saving functions
@@ -160,36 +186,13 @@ extension GeotificationsViewController: MKMapViewDelegate {
     let geotification = view.annotation as! Geotification
     remove(geotification: geotification)
     saveAllGeotifications()
+    
   }
   
 }
 
-//MARK: create user region
 
-  func region(withGeotification geotification: Geotification) -> CLCircularRegion {
-    //1
-    let region = CLCircularRegion(center: geotification.coordinate, radius: geotification.radius, identifier: geotification.identifier)
-    //2
-    region.notifyOnEntry = (geotification.eventType == .onEntry)
-    region.notifyOnExit = !region.notifyOnEntry
-    return region
-}
 
-//MARK: Start monitoring
 
-func startMonitoring(geotification: Geotification) {
-  // 1
-  if !CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
-    showAlert(withTitle:"Error", message: "Geofencing is not supported on this device!")
-    return
-  }
-  // 2
-  if CLLocationManager.authorizationStatus() != .authorizedAlways {
-    showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geominder permission to access the device location.")
-  }
-  // 3
-  let region = self.region(withGeotification: geotification)
-  // 4
-  locationManager.startMonitoring(for: region)
-}
+
 

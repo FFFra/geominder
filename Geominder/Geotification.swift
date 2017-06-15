@@ -1,8 +1,4 @@
 
-/**
-
- */
-
 import UIKit
 import MapKit
 import CoreLocation
