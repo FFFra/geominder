@@ -54,12 +54,21 @@ class GeotificationsViewController: UIViewController {
     }
     // 2
     if CLLocationManager.authorizationStatus() != .authorizedAlways {
-      showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geotify permission to access the device location.")
+      showAlert(withTitle:"Warning", message: "Your geotification is saved but will only be activated once you grant Geominder permission to access the device location.")
     }
     // 3
     let region = self.region(withGeotification: geotification)
     // 4
     locationManager.startMonitoring(for: region)
+  }
+  
+  //MARK: Stop monitoring a given geotification when the user removes it from the app
+  
+  func stopMonitoring( geotification : Geotification) {
+    for region in locationManager.monitoredRegions {
+        guard let circularRegion = region as? CLCircularRegion, circularRegion.identifier == geotification.identifier else {continue}
+      locationManager.stopMonitoring(for: circularRegion)
+    }
   }
   
   // MARK: Loading and saving functions
